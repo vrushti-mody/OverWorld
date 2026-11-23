@@ -38,4 +38,7 @@ await writeFile(resolve(site, 'dashboard.html'), dashboard);
 await writeFile(resolve(site, 'index.html'), await readFile(resolve(root, 'site-src/index.html'), 'utf8'));
 await writeFile(resolve(site, 'login.js'), await readFile(resolve(root, 'site-src/login.js'), 'utf8'));
 await writeFile(resolve(site, 'app.js'), await readFile(resolve(root, 'site-src/app.js'), 'utf8'));
+for (const file of ['oauth-consent.html', 'oauth-consent.js', 'oauth-consent.css']) {
+  await writeFile(resolve(site, file), await readFile(resolve(root, 'site-src', file), 'utf8'));
+}
 console.log('Built Overworld app into site/');
