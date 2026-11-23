@@ -1,4 +1,4 @@
-import { commitProjects, findNode, requireContext, slug, validateNewProject, validateNewTask, STATUSES } from '../lib/server.js';
+import { commitProjects, decodeKey, findNode, requireContext, slug, validateNewProject, validateNewTask, STATUSES } from '../lib/server.js';
 import { hasScope, requireMcpContext, READ_SCOPE, WRITE_SCOPE } from '../lib/oauth.js';
 
 const protocolVersion = '2025-11-25';
@@ -10,6 +10,7 @@ const tools = [
   { name: 'create_project', description: 'Create a project in the signed-in user’s workspace after the user asks to track a new outcome.', inputSchema: { type: 'object', properties: { name: { type: 'string', description: 'Short project name.' }, goal: { type: 'string', description: 'Why the project exists.' }, done_when: { type: 'string', description: 'Observable finish line.' }, domain: { type: 'string', enum: ['systems','content','career','life','money'] }, mode: { type: 'string', enum: ['campaign','practice','fallow','idea'] } }, required: ['name','goal','done_when','domain','mode'], additionalProperties: false }, annotations: { title: 'Create project', readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false } },
   { name: 'add_task', description: 'Add a testable task to one of the signed-in user’s projects. Include a clear finish line and only hard prerequisites.', inputSchema: { type: 'object', properties: { project_id: { type: 'string' }, name: { type: 'string', description: 'Short task name.' }, done_when: { type: 'string', description: 'Observable result that proves the task is complete.' }, parent_key: { type: 'string', description: 'Optional full key of an existing component; omit to add at the project root.' }, needs: { type: 'array', items: { type: 'string' }, description: 'Optional sibling task IDs that must be complete first.' } }, required: ['project_id','name','done_when'], additionalProperties: false }, annotations: { title: 'Add task', readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false } },
   { name: 'update_node', description: 'Update the status, finish line, or note of one existing project or task. Use done only when the user confirms the finish line was checked.', inputSchema: { type: 'object', properties: { key: { type: 'string', description: 'Full Overworld key for the project or task, as returned in the key field by list_projects, get_project, create_project, or add_task. Format: /<project-id> for a project, /<project-id>/<task-id> for a task.' }, status: { type: 'string', enum: ['idea','planned','partial','done','live','waiting','blocked','drift','dropped'] }, done_when: { type: 'string' }, note: { type: 'string' } }, required: ['key'], additionalProperties: false }, annotations: { title: 'Update project item', readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false } },
+  { name: 'delete_node', description: 'Permanently delete one project or task (and everything inside it) from the signed-in user’s workspace. Only call this when the user explicitly asks to delete it, and set confirm to true only after they confirm. Use update_node with status dropped instead if the user just wants to retire it.', inputSchema: { type: 'object', properties: { key: { type: 'string', description: 'Full Overworld key, e.g. /<project-id> or /<project-id>/<task-id>, as returned by list_projects or get_project.' }, confirm: { type: 'boolean', description: 'Must be true. Set only after the user explicitly confirmed the deletion.' } }, required: ['key','confirm'], additionalProperties: false }, annotations: { title: 'Delete project or task', readOnlyHint: false, destructiveHint: true, openWorldHint: false } }
 ];
 
 const jsonReply = (id, result) => ({ jsonrpc: '2.0', id, result });
@@ -76,6 +77,18 @@ async function callTool(context, name, args) {
     }
     if (args.status === undefined && args.done_when === undefined && args.note === undefined) return toolError('Provide a status, finish line, or note to update.');
     action = 'mcp.node.update'; details = { key: args.key, status: args.status };
+  } else if (name === 'delete_node') {
+    if (args.confirm !== true) return toolError('Deletion needs explicit confirmation. Ask the user, then call again with confirm set to true.');
+    const key = normalizeKey(args.key);
+    const path = decodeKey(key);
+    if (!path?.length || !findNode(projects, key)) return toolError('No project item with that key exists in this workspace.');
+    const id = path[path.length - 1];
+    let siblings = projects;
+    if (path.length > 1) siblings = findNode(projects, `/${path.slice(0, -1).map(keyPart).join('/')}`).nodes;
+    const blocked = siblings.find((node) => node.id !== id && Array.isArray(node.needs) && node.needs.includes(id));
+    if (blocked && path.length > 1) return toolError(`Cannot delete: "${blocked.name}" depends on this task. Remove that dependency or delete it first.`);
+    siblings.splice(siblings.findIndex((node) => node.id === id), 1);
+    action = 'mcp.node.delete'; details = { key, deleted: true };
   } else return null;
   const conflict = await commitProjects(context, projects, action, details);
   if (conflict) return toolError('The map changed while this tool was working. Refresh Overworld and ask Gemini to try again.');
