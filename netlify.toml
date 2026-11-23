@@ -1,6 +1,10 @@
 [build]
   command = "npm run build"
   publish = "site"
+  # MONGODB_DB ("overworld"), the public client ID and base URL are not secrets;
+  # the value "overworld" appears throughout the source and triggers false positives.
+  [build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "MONGODB_DB,GOOGLE_CLIENT_ID,APP_BASE_URL"
 [dev]
   publish = "site"
   functions = "netlify/functions"
