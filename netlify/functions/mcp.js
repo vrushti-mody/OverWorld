@@ -9,25 +9,27 @@ const tools = [
   { name: 'get_project', description: 'Read one project and its task tree from the signed-in user’s Overworld workspace.', inputSchema: { type: 'object', properties: { project_id: { type: 'string', description: 'Stable project ID returned by list_projects.' } }, required: ['project_id'], additionalProperties: false }, annotations: { title: 'Read project', readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
   { name: 'create_project', description: 'Create a project in the signed-in user’s workspace after the user asks to track a new outcome.', inputSchema: { type: 'object', properties: { name: { type: 'string', description: 'Short project name.' }, goal: { type: 'string', description: 'Why the project exists.' }, done_when: { type: 'string', description: 'Observable finish line.' }, domain: { type: 'string', enum: ['systems','content','career','life','money'] }, mode: { type: 'string', enum: ['campaign','practice','fallow','idea'] } }, required: ['name','goal','done_when','domain','mode'], additionalProperties: false }, annotations: { title: 'Create project', readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false } },
   { name: 'add_task', description: 'Add a testable task to one of the signed-in user’s projects. Include a clear finish line and only hard prerequisites.', inputSchema: { type: 'object', properties: { project_id: { type: 'string' }, name: { type: 'string', description: 'Short task name.' }, done_when: { type: 'string', description: 'Observable result that proves the task is complete.' }, parent_key: { type: 'string', description: 'Optional full key of an existing component; omit to add at the project root.' }, needs: { type: 'array', items: { type: 'string' }, description: 'Optional sibling task IDs that must be complete first.' } }, required: ['project_id','name','done_when'], additionalProperties: false }, annotations: { title: 'Add task', readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false } },
-  { name: 'update_node', description: 'Update the status, finish line, or note of one existing project or task. Use done only when the user confirms the finish line was checked.', inputSchema: { type: 'object', properties: { key: { type: 'string', description: 'Full Overworld key for the project or task.' }, status: { type: 'string', enum: ['idea','planned','partial','done','live','waiting','blocked','drift','dropped'] }, done_when: { type: 'string' }, note: { type: 'string' } }, required: ['key'], additionalProperties: false }, annotations: { title: 'Update project item', readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false } },
+  { name: 'update_node', description: 'Update the status, finish line, or note of one existing project or task. Use done only when the user confirms the finish line was checked.', inputSchema: { type: 'object', properties: { key: { type: 'string', description: 'Full Overworld key for the project or task, as returned in the key field by list_projects, get_project, create_project, or add_task. Format: /<project-id> for a project, /<project-id>/<task-id> for a task.' }, status: { type: 'string', enum: ['idea','planned','partial','done','live','waiting','blocked','drift','dropped'] }, done_when: { type: 'string' }, note: { type: 'string' } }, required: ['key'], additionalProperties: false }, annotations: { title: 'Update project item', readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false } },
 ];
 
 const jsonReply = (id, result) => ({ jsonrpc: '2.0', id, result });
 const errorReply = (id, code, message) => ({ jsonrpc: '2.0', id, error: { code, message } });
 const toolResult = (value) => ({ content: [{ type: 'text', text: JSON.stringify(value) }], structuredContent: value });
 const toolError = (message) => ({ isError: true, content: [{ type: 'text', text: message }] });
+const normalizeKey = (key) => { const text = String(key || '').trim(); return text.startsWith('/') ? text : `/${text}`; };
+const withKeys = (node, key) => ({ key, ...node, ...(Array.isArray(node.nodes) ? { nodes: node.nodes.map((child) => withKeys(child, `${key}/${keyPart(child.id)}`)) } : {}) });
 const keyPart = (value) => String(value).replace(/~/g, '~0').replace(/\//g, '~1');
 
 async function callTool(context, name, args) {
   if (name === 'list_projects') {
     if (!hasScope(context, READ_SCOPE)) return toolError('This Gemini link does not have permission to read projects. Disconnect it and connect again.');
     const projects = context.map.projects || [];
-    return toolResult(projects.map((p) => ({ id: p.id, name: p.name, goal: p.goal || '', done_when: p.done_when || '', status: p.status || 'derived', domain: p.domain, mode: p.mode })));
+    return toolResult({ projects: projects.map((p) => ({ key: `/${keyPart(p.id)}`, id: p.id, name: p.name, goal: p.goal || '', done_when: p.done_when || '', status: p.status || 'derived', domain: p.domain, mode: p.mode })) });
   }
   if (name === 'get_project') {
     if (!hasScope(context, READ_SCOPE)) return toolError('This Gemini link does not have permission to read projects.');
     const project = (context.map.projects || []).find((p) => p.id === args.project_id);
-    return project ? toolResult(project) : toolError('No project with that ID exists in this workspace.');
+    return project ? toolResult(withKeys(project, `/${keyPart(project.id)}`)) : toolError('No project with that ID exists in this workspace.');
   }
   if (!hasScope(context, WRITE_SCOPE)) return toolError('This Gemini link does not have permission to change the map. Disconnect it and reconnect with write access.');
   const projects = structuredClone(context.map.projects || []);
@@ -38,14 +40,14 @@ async function callTool(context, name, args) {
     const invalid = validateNewProject(project);
     if (invalid) return toolError(invalid);
     if (projects.some((p) => p.id === project.id)) return toolError('A project with that name already exists. Choose a different name.');
-    projects.push(project); action = 'mcp.project.create'; details = { projectId: project.id };
+    projects.push(project); action = 'mcp.project.create'; details = { projectId: project.id, key: `/${keyPart(project.id)}` };
   } else if (name === 'add_task') {
     const project = projects.find((p) => p.id === args.project_id);
     if (!project) return toolError('No project with that ID exists in this workspace.');
     let siblings;
     if (args.parent_key) {
       const parentPath = String(args.parent_key).split('/').filter(Boolean);
-      const parent = findNode(projects, args.parent_key);
+      const parent = findNode(projects, normalizeKey(args.parent_key));
       if (!parent || parentPath[0] !== project.id || !Array.isArray(parent.nodes)) return toolError('Choose an existing component in the selected project.');
       siblings = parent.nodes;
     } else siblings = project.nodes || (project.nodes = []);
@@ -55,9 +57,9 @@ async function callTool(context, name, args) {
     if (siblings.some((node) => node.id === task.id)) return toolError('A task with that name already exists at this level.');
     const siblingIds = new Set(siblings.map((node) => node.id));
     if ((task.needs || []).some((id) => !siblingIds.has(id))) return toolError('Each prerequisite must be an existing sibling task ID.');
-    siblings.push(task); action = 'mcp.task.create'; details = { projectId: project.id, taskId: task.id };
+    siblings.push(task); action = 'mcp.task.create'; details = { projectId: project.id, taskId: task.id, key: `${args.parent_key ? normalizeKey(args.parent_key) : `/${keyPart(project.id)}`}/${keyPart(task.id)}` };
   } else if (name === 'update_node') {
-    const node = findNode(projects, args.key);
+    const node = findNode(projects, normalizeKey(args.key));
     if (!node) return toolError('No project item with that key exists in this workspace.');
     if (args.status !== undefined) {
       if (!STATUSES.has(args.status)) return toolError('Unsupported status.');
