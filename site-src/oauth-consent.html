@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Connect Gemini to Overworld</title>
+  <link rel="stylesheet" href="/oauth-consent.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="/oauth-consent.js" defer></script>
+</head>
+<body>
+  <main class="card">
+    <p class="eyebrow">OVERWORLD WORKSPACE</p>
+    <h1>Connect your workspace</h1>
+    <p>Sign in with the Google account that owns your Overworld workspace. Gemini will be able to read your projects and, when you ask, add projects, add tasks, or update project details.</p>
+    <div id="signin"></div>
+    <section id="approval" hidden>
+      <p id="account"></p>
+      <div class="permissions"><b>Gemini is requesting:</b><ul><li>Read projects and tasks</li><li>Add projects and tasks</li><li>Update status, finish lines, and notes</li></ul></div>
+      <p class="fine">Gemini may ask you to confirm an action before it changes your map. You can disconnect the app from Gemini’s Connected Apps settings.</p>
+      <button id="allow" disabled>Allow Gemini to connect</button>
+    </section>
+    <p id="message" role="status" aria-live="polite"></p>
+  </main>
+</body>
+</html>

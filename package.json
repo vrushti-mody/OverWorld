@@ -1,0 +1,18 @@
+{
+  "name": "overworld-gemini-app",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "node scripts/build-app.mjs",
+    "dev": "node scripts/dev-local.mjs",
+    "deploy:check": "node scripts/check-env.mjs"
+  },
+  "dependencies": {
+    "google-auth-library": "^11.3.4",
+    "mongodb": "^7.9.1"
+  },
+  "devDependencies": {
+    "netlify-cli": "^27.20.1"
+  }
+}

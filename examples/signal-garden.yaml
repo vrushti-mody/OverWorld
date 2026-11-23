@@ -1,0 +1,44 @@
+# Fictional demonstration only. All goals, statuses and checks below are invented.
+id: demo-signal-garden
+name: Signal Garden
+domain: systems
+mode: campaign
+goal: Build an imaginary garden exhibit that turns simulated sensor readings into light.
+done_when: A visitor can choose a simulated reading and see its matching light pattern.
+note: Fictional project for exploring the interface; no real work or verification is represented.
+nodes:
+  - id: readings
+    name: Simulated readings
+    status: done
+    done_when: Three sample readings can be selected and replayed.
+    check: manual
+    note: Fictional verified state for this demo.
+  - id: light-patterns
+    name: Light patterns
+    needs: [readings]
+    done_when: Each sample reading produces a distinct light pattern.
+    nodes:
+      - id: palette
+        name: Choose palette
+        status: done
+        done_when: Three patterns are visually distinguishable.
+        check: manual
+        note: Fictional verified state for this demo.
+      - id: preview
+        name: Pattern preview
+        status: partial
+        needs: [palette]
+        done_when: A preview displays the selected pattern.
+        steps:
+          - {name: Draw one pattern, done: true}
+          - {name: Switch between patterns, done: false}
+  - id: visitor-controls
+    name: Visitor controls
+    status: planned
+    needs: [light-patterns]
+    done_when: A visitor can select and replay each simulated reading.
+  - id: exhibit-copy
+    name: Exhibit copy
+    status: waiting
+    done_when: The exhibit has a short instruction card.
+    note: Fictional wait for a draft from the imaginary exhibit team; resume when it arrives.

@@ -1,0 +1,157 @@
+{
+ "id": "world",
+ "key": "",
+ "name": "Overworld",
+ "kind": "world",
+ "as_of": "2026-11-23",
+ "children": [
+  {
+   "id": "demo-signal-garden",
+   "name": "Signal Garden",
+   "domain": "systems",
+   "mode": "campaign",
+   "goal": "Build an imaginary garden exhibit that turns simulated sensor readings into light.",
+   "done_when": "A visitor can choose a simulated reading and see its matching light pattern.",
+   "note": "Fictional project for exploring the interface; no real work or verification is represented.",
+   "key": "/demo-signal-garden",
+   "source": "examples/signal-garden.yaml",
+   "w": 1,
+   "kind": "project",
+   "children": [
+    {
+     "id": "readings",
+     "name": "Simulated readings",
+     "status": "done",
+     "done_when": "Three sample readings can be selected and replayed.",
+     "check": "manual",
+     "note": "Fictional verified state for this demo.",
+     "key": "/demo-signal-garden/readings",
+     "source": "examples/signal-garden.yaml",
+     "w": 1,
+     "kind": "task"
+    },
+    {
+     "id": "light-patterns",
+     "name": "Light patterns",
+     "needs": [
+      "readings"
+     ],
+     "done_when": "Each sample reading produces a distinct light pattern.",
+     "key": "/demo-signal-garden/light-patterns",
+     "source": "examples/signal-garden.yaml",
+     "w": 1,
+     "kind": "component",
+     "children": [
+      {
+       "id": "palette",
+       "name": "Choose palette",
+       "status": "done",
+       "done_when": "Three patterns are visually distinguishable.",
+       "check": "manual",
+       "note": "Fictional verified state for this demo.",
+       "key": "/demo-signal-garden/light-patterns/palette",
+       "source": "examples/signal-garden.yaml",
+       "w": 1,
+       "kind": "task"
+      },
+      {
+       "id": "preview",
+       "name": "Pattern preview",
+       "status": "partial",
+       "needs": [
+        "palette"
+       ],
+       "done_when": "A preview displays the selected pattern.",
+       "steps": [
+        {
+         "name": "Draw one pattern",
+         "done": true
+        },
+        {
+         "name": "Switch between patterns",
+         "done": false
+        }
+       ],
+       "key": "/demo-signal-garden/light-patterns/preview",
+       "source": "examples/signal-garden.yaml",
+       "w": 1,
+       "kind": "task"
+      }
+     ]
+    },
+    {
+     "id": "visitor-controls",
+     "name": "Visitor controls",
+     "status": "planned",
+     "needs": [
+      "light-patterns"
+     ],
+     "done_when": "A visitor can select and replay each simulated reading.",
+     "key": "/demo-signal-garden/visitor-controls",
+     "source": "examples/signal-garden.yaml",
+     "w": 1,
+     "kind": "task"
+    },
+    {
+     "id": "exhibit-copy",
+     "name": "Exhibit copy",
+     "status": "waiting",
+     "done_when": "The exhibit has a short instruction card.",
+     "note": "Fictional wait for a draft from the imaginary exhibit team; resume when it arrives.",
+     "key": "/demo-signal-garden/exhibit-copy",
+     "source": "examples/signal-garden.yaml",
+     "w": 1,
+     "kind": "task"
+    }
+   ]
+  },
+  {
+   "id": "demo-garden-stewardship",
+   "name": "Garden Stewardship",
+   "work_type": "area",
+   "domain": "life",
+   "mode": "practice",
+   "goal": "Keep an imaginary community garden usable across seasons.",
+   "review_criteria": "Active cases have a next action and owner, and watering and maintenance needs are covered.",
+   "note": "Fictional ongoing area. Finished cases do not complete stewardship or establish its health.",
+   "key": "/demo-garden-stewardship",
+   "source": "examples/garden-stewardship.yaml",
+   "w": 1,
+   "kind": "project",
+   "children": [
+    {
+     "id": "spring-planting",
+     "name": "Spring planting",
+     "status": "done",
+     "done_when": "The imaginary spring beds are planted and watered.",
+     "check": "manual",
+     "note": "Fictional verified case for this demo.",
+     "key": "/demo-garden-stewardship/spring-planting",
+     "source": "examples/garden-stewardship.yaml",
+     "w": 1,
+     "kind": "task"
+    },
+    {
+     "id": "repair-tools",
+     "name": "Repair tools",
+     "status": "partial",
+     "done_when": "The shared tools are usable and returned to storage.",
+     "steps": [
+      {
+       "name": "Inspect the tools",
+       "done": true
+      },
+      {
+       "name": "Replace damaged handles",
+       "done": false
+      }
+     ],
+     "key": "/demo-garden-stewardship/repair-tools",
+     "source": "examples/garden-stewardship.yaml",
+     "w": 1,
+     "kind": "task"
+    }
+   ]
+  }
+ ]
+}

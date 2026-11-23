@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0c1222"><title>Overworld · Sign in</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root{color-scheme:dark;--bg:#0c1222;--panel:#141c33;--line:#283457;--fg:#e8ebf5;--muted:#9aa5c6;--accent:#9a8cff;font-family:'Atkinson Hyperlegible',system-ui,sans-serif}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 0%,#24234b,var(--bg) 62%);color:var(--fg)}main{width:min(520px,calc(100% - 32px));padding:36px;border:1px solid var(--line);border-radius:22px;background:color-mix(in srgb,var(--panel) 92%,transparent);box-shadow:0 24px 70px #0006}h1{font:600 36px Lexend,system-ui;margin:0 0 8px;letter-spacing:-.04em}p{color:var(--muted);line-height:1.55}.mark{color:var(--accent);font:600 12px Lexend;letter-spacing:.14em;text-transform:uppercase}#signin{margin:26px 0 12px;min-height:44px}#message{font-size:13px;min-height:20px;color:var(--muted)}.note{margin-top:24px;border-top:1px solid var(--line);padding-top:18px;font-size:12px}
+  </style>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body><main>
+  <div class="mark">A map for your work</div><h1>Overworld</h1>
+  <p>See your projects, dependencies, and next actions in one place. Sign in to create your private workspace and plan changes with Gemini.</p>
+  <div id="signin"></div><div id="message" role="status" aria-live="polite">Loading sign-in…</div>
+  <div class="note">Your map is stored in your Overworld workspace. Connect Gemini to read your projects and make requested updates.</div>
+</main><script src="/login.js" defer></script></body></html>

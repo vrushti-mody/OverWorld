@@ -1,0 +1,23 @@
+# Fictional demonstration only. Criteria, tasks and verification below are invented.
+id: demo-garden-stewardship
+name: Garden Stewardship
+work_type: area
+domain: life
+mode: practice
+goal: Keep an imaginary community garden usable across seasons.
+review_criteria: Active cases have a next action and owner, and watering and maintenance needs are covered.
+note: Fictional ongoing area. Finished cases do not complete stewardship or establish its health.
+nodes:
+  - id: spring-planting
+    name: Spring planting
+    status: done
+    done_when: The imaginary spring beds are planted and watered.
+    check: manual
+    note: Fictional verified case for this demo.
+  - id: repair-tools
+    name: Repair tools
+    status: partial
+    done_when: The shared tools are usable and returned to storage.
+    steps:
+      - {name: Inspect the tools, done: true}
+      - {name: Replace damaged handles, done: false}

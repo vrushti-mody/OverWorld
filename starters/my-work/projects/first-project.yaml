@@ -1,0 +1,26 @@
+# Fictional starter. Replace the example with a project you want to track.
+id: first-project
+name: Prepare a 30-minute workshop
+domain: career
+mode: campaign
+goal: Give a first-time facilitator an outline they can use to run the workshop.
+done_when: A facilitator has reviewed the timed outline and all agreed revisions are in the final copy.
+nodes:
+  - id: draft-outline
+    name: Draft the activities
+    status: planned
+    done_when: Each activity has instructions and the allocated times add up to 30 minutes.
+    check: manual
+  - id: get-review
+    name: Get a facilitator's review
+    status: planned
+    needs: [draft-outline]
+    done_when: The facilitator's feedback is recorded and any agreed revisions are listed.
+    check: manual
+    note: For review decisions and handoff details, see notes/workshop-review.md in the workspace.
+  - id: finish-outline
+    name: Finalize the outline
+    status: planned
+    needs: [get-review]
+    done_when: The final copy incorporates each agreed revision and is ready for the facilitator.
+    check: manual

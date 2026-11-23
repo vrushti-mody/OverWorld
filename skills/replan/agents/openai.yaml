@@ -1,0 +1,6 @@
+interface:
+  display_name: "Replan"
+  short_description: "Reconcile plans, evidence, reuse, and progress"
+  default_prompt: "Use $replan to reconcile the selected workspace plans with current evidence, apply justified local updates, and refresh its local dashboard."
+policy:
+  allow_implicit_invocation: true

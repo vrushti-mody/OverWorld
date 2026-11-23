@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "sources": ["projects/first-project.yaml"],
+  "output_dir": "build"
+}
